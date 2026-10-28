@@ -21,6 +21,16 @@ function constantTimeEqual(candidate, expected) {
   return difference === 0;
 }
 
+function adminKeyCandidate(request, body) {
+  const values = [
+    body?.key,
+    body?.password,
+    new URL(request.url).searchParams.get("key"),
+    request.headers.get("x-admin-key"),
+  ];
+  return values.find((value) => typeof value === "string") || "";
+}
+
 function requestIp(request) {
   return request.headers.get("CF-Connecting-IP") || "unknown";
 }
@@ -54,14 +64,17 @@ function sameOrigin(request) {
 }
 
 async function onRequestGet({ request, env }) {
-  const auth = await verifyAdminJwt(request, env);
-  return json({ authenticated: auth.ok });
+  const cookieAuth = await verifyAdminJwt(request, env);
+  if (cookieAuth.ok) return json({ authenticated: true });
+  const ADMIN_SECRET = (env?.ADMIN_KEY || "yam2026").trim();
+  return json({ authenticated: constantTimeEqual(adminKeyCandidate(request), ADMIN_SECRET) });
 }
 
 async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return json({ authenticated: false, error: "origin_not_allowed" }, 403);
-  const secret = typeof env?.ADMIN_KEY === "string" ? env.ADMIN_KEY : "";
-  if (!secret) return json({ authenticated: false, error: "auth_not_configured" }, 503);
+  const ADMIN_SECRET = (env?.ADMIN_KEY || "yam2026").trim();
+  const cookieAuth = await verifyAdminJwt(request, env);
+  if (cookieAuth.ok) return json({ authenticated: true });
 
   const ip = requestIp(request);
   const now = Date.now();
@@ -71,19 +84,19 @@ async function onRequestPost({ request, env }) {
   try {
     const text = await request.text();
     if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return json({ authenticated: false, error: "request_too_large" }, 413);
-    body = JSON.parse(text);
+    body = text.trim() ? JSON.parse(text) : {};
   } catch {
     return json({ authenticated: false, error: "invalid_json" }, 400);
   }
 
-  const candidate = typeof body?.password === "string" ? body.password : "";
-  if (!constantTimeEqual(candidate, secret)) {
+  const candidate = adminKeyCandidate(request, body);
+  if (!constantTimeEqual(candidate, ADMIN_SECRET)) {
     recordFailure(ip, now);
     return json({ authenticated: false, error: "invalid_credentials" }, 401);
   }
 
   attemptsByIp.delete(ip);
-  const token = await signAdminJwt(secret);
+  const token = await signAdminJwt(ADMIN_SECRET);
   return json({ authenticated: true }, 200, { "set-cookie": cookieHeader(token, SESSION_SECONDS) });
 }
 

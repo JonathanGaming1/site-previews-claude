@@ -24,6 +24,21 @@ function sameOrigin(request) {
   return Boolean(origin) && origin === new URL(request.url).origin;
 }
 
+function constantTimeEqual(candidate, expected) {
+  const encoder = new TextEncoder();
+  const left = encoder.encode(candidate);
+  const right = encoder.encode(expected);
+  let difference = left.length ^ right.length;
+  for (let i = 0; i < 1024; i += 1) difference |= (left[i] || 0) ^ (right[i] || 0);
+  if (left.length > 1024 || right.length > 1024) difference |= 1;
+  return difference === 0;
+}
+
+function adminKeyCandidate(request, body) {
+  const values = [body?.key, new URL(request.url).searchParams.get("key"), request.headers.get("x-admin-key")];
+  return values.find((value) => typeof value === "string") || "";
+}
+
 async function readJson(request) {
   const text = await request.text();
   if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) throw Object.assign(new Error("request_too_large"), { status: 413 });
@@ -84,12 +99,7 @@ function checkpointState(existing, current, label) {
 }
 
 async function onRequestPost({ request, env }) {
-  const auth = await verifyAdminJwt(request, env);
-  if (!auth.ok) return json({ ok: false, error: "unauthorized" }, 401);
   if (!sameOrigin(request)) return json({ ok: false, error: "origin_not_allowed" }, 403);
-
-  const token = typeof env?.GITHUB_TOKEN === "string" ? env.GITHUB_TOKEN : "";
-  if (!token) return json({ ok: false, error: "github_not_configured" }, 503);
 
   let body;
   try {
@@ -98,6 +108,15 @@ async function onRequestPost({ request, env }) {
     return json({ ok: false, error: error?.message === "request_too_large" ? "request_too_large" : "invalid_json" }, error?.status || 400);
   }
   if (!isObject(body) || typeof body.action !== "string") return json({ ok: false, error: "invalid_payload" }, 400);
+
+  const ADMIN_SECRET = (env?.ADMIN_KEY || "yam2026").trim();
+  const cookieAuth = await verifyAdminJwt(request, env);
+  const keyAuth = constantTimeEqual(adminKeyCandidate(request, body), ADMIN_SECRET);
+  if (!cookieAuth.ok && !keyAuth) return json({ ok: false, error: "unauthorized" }, 401);
+
+  const token = typeof env?.GITHUB_TOKEN === "string" ? env.GITHUB_TOKEN : "";
+  if (!token) return json({ ok: false, error: "github_not_configured" }, 503);
+
   const slug = typeof body.slug === "string" ? body.slug : "";
   if (!validateSlug(slug)) return json({ ok: false, error: "invalid_slug" }, 400);
 

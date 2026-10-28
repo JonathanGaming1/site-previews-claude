@@ -51,6 +51,15 @@ select,
   outline: 2px solid rgba(200, 169, 126, 0.9);
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .font-editorial {
   font-family: var(--font-cormorant);
   font-weight: 300;
@@ -178,7 +187,8 @@ body.virtual-camera-active::-webkit-scrollbar {
   height: 0;
 }
 
-[data-native-scroll] {
+[data-native-scroll],
+[data-scene-content] {
   touch-action: pan-y;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

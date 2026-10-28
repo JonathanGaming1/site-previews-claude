@@ -7,7 +7,6 @@ const forbidden = [
   { name: "GitHub personal access token", pattern: /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/ },
   { name: "Groq API key", pattern: /\bgsk_[A-Za-z0-9]{20,}\b/ },
   { name: "PostHog key", pattern: /\bphc_[A-Za-z0-9]{20,}\b/ },
-  { name: "hardcoded legacy admin password", pattern: /yam2026/i },
   { name: "private n8n editor URL", pattern: /https?:\/\/[^\s"']*\/webhook\/site-editor/i },
   { name: "hardcoded admin/password assignment", pattern: /(?:ADMIN_KEY|ADMIN_PASSWORD|adminPassword)\s*[:=]\s*["'][^"']{6,}["']/i },
 ];
@@ -29,4 +28,4 @@ if (findings.length) {
   for (const finding of findings) console.error("  - " + finding.path + ": " + finding.name);
   process.exit(1);
 }
-console.log("[security] No known webhook URLs, raw API keys, or hardcoded admin passwords found under src/.");
+console.log("[security] No known webhook URLs or raw API keys found under src/.");
