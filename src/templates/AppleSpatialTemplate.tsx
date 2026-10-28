@@ -30,11 +30,11 @@ export function AppleSpatialTemplate() {
   const [selectedService, setSelectedService] = useState(0);
   const [ambientMode, setAmbientMode] = useState(0);
   const engine = useVirtualCameraEngine(menuOpen);
-  const { smoothProgress, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
+  const { smoothProgress, smoothScene, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
   const scenes = [
-    useVirtualCameraScene(smoothProgress, 0), useVirtualCameraScene(smoothProgress, 1),
-    useVirtualCameraScene(smoothProgress, 2), useVirtualCameraScene(smoothProgress, 3),
-    useVirtualCameraScene(smoothProgress, 4),
+    useVirtualCameraScene(smoothScene, 0), useVirtualCameraScene(smoothScene, 1),
+    useVirtualCameraScene(smoothScene, 2), useVirtualCameraScene(smoothScene, 3),
+    useVirtualCameraScene(smoothScene, 4),
   ];
   const orbit = useTransform(smoothProgress, [0, 1], [0, 540]);
   const depthFloat = useTransform(smoothProgress, [0, 1], [0, -180]);

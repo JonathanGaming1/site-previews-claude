@@ -28,11 +28,11 @@ export function ForgeAutomotiveTemplate() {
   const [tier, setTier] = useState("BESPOKE");
   const [timeline, setTimeline] = useState("VIP");
   const engine = useVirtualCameraEngine(menuOpen);
-  const { smoothProgress, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
+  const { smoothProgress, smoothScene, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
   const scenes = [
-    useVirtualCameraScene(smoothProgress, 0), useVirtualCameraScene(smoothProgress, 1),
-    useVirtualCameraScene(smoothProgress, 2), useVirtualCameraScene(smoothProgress, 3),
-    useVirtualCameraScene(smoothProgress, 4),
+    useVirtualCameraScene(smoothScene, 0), useVirtualCameraScene(smoothScene, 1),
+    useVirtualCameraScene(smoothScene, 2), useVirtualCameraScene(smoothScene, 3),
+    useVirtualCameraScene(smoothScene, 4),
   ];
   const number = String(info.whatsapp || info.phone || "").replace(/\D/g, "").replace(/^0/, "972");
   const whatsapp = number ? `https://wa.me/${number}` : "#contact";
