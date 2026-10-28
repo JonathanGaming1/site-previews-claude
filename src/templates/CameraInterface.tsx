@@ -68,14 +68,26 @@ export function CameraInterface(props: CameraInterfaceProps) {
 interface CameraSceneProps {
   index: number;
   activeScene: number;
-  scene: { scale: MotionValue<number>; opacity: MotionValue<number>; z: MotionValue<number> };
+  scene: {
+    scale: MotionValue<number>;
+    opacity: MotionValue<number>;
+    z: MotionValue<number>;
+    visibility: MotionValue<"visible" | "hidden">;
+    pointerEvents: MotionValue<"auto" | "none">;
+  };
   className?: string;
   children: React.ReactNode;
   id?: string;
 }
 
 export function CameraScene({ index, activeScene, scene, className = "", children, id }: CameraSceneProps) {
-  return <motion.section id={id} aria-hidden={activeScene !== index} style={{ ...scene, pointerEvents: activeScene === index ? "auto" : "none" }} className={`absolute inset-0 flex items-center justify-center px-5 pb-36 pt-24 md:px-16 md:pb-28 ${className}`}>{children}</motion.section>;
+  return (
+    <motion.section id={id} aria-hidden={activeScene !== index} style={{ ...scene, filter: "none" }} className={`absolute inset-0 flex items-center justify-center overflow-hidden px-5 pb-36 pt-24 md:px-16 md:pb-28 ${className}`}>
+      <div data-scene-content="true" className="no-scrollbar flex min-h-0 w-full items-center justify-center overflow-y-auto" style={{ maxHeight: "min(82vh, 100%)" }}>
+        {children}
+      </div>
+    </motion.section>
+  );
 }
 
 export const glassPanel = "border border-white/[.13] bg-white/[.035] shadow-[0_30px_100px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.09)] backdrop-blur-2xl";
