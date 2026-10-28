@@ -1,95 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, useTransform } from "framer-motion";
-import { useSite } from "@/components/SiteProvider";
-import { TiltCard3D } from "@/components/TiltCard3D";
-import { CameraInterface, CameraScene, chapterLabel, glassPanel, mutedCopy } from "@/templates/CameraInterface";
-import { useVirtualCameraEngine, useVirtualCameraScene } from "@/templates/useVirtualCameraEngine";
+import React from "react";
+import { ArchitecturalExperience, type ArchitecturalConfig } from "@/templates/ArchitecturalExperience";
 
-type LightingMood = "gold" | "titanium" | "crimson";
-const moodSpecs: Record<LightingMood, { label: string; name: string; accent: string; tint: string; description: string }> = {
-  gold: { label: "AMBIENT GOLD", name: "אור שמפניה", accent: "#C8A97E", tint: "rgba(200,169,126,.14)", description: "תאורה חמה, זכוכית מעושנת וגימור שמפניה מאוזן." },
-  titanium: { label: "MIDNIGHT TITANIUM", name: "טיטניום לילי", accent: "#A7B2C2", tint: "rgba(142,164,194,.13)", description: "אור קר ומדויק שמדגיש משטחים, עומק וקווים אדריכליים." },
-  crimson: { label: "CRIMSON STUDIO", name: "סטודיו ארגמן", accent: "#C66B68", tint: "rgba(177,55,59,.16)", description: "נגיעת ארגמן עמוקה לחלל פרטי עם נוכחות דרמטית." },
+const config: ArchitecturalConfig = {
+  variant: "horology",
+  studio: "OBSIDIAN / INTERIOR ATELIER",
+  portalTitle: "Bespoke Kitchen & Interior Atelier",
+  portalLabel: "MEDITERRANEAN ARCHED VILLA",
+  windowName: "GRAND STONE ARCHWAY",
+  defaultMode: "night",
+  accent: "#C8A97E",
+  secondary: "#D8BE8B",
+  interiorImage: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=2000&q=88",
+  beforeImage: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1800&q=85",
+  afterImage: "https://images.unsplash.com/photo-1600585152915-d208bec867a1?auto=format&fit=crop&w=1800&q=85",
+  materials: [
+    { id: "stone", label: "אבן טרוורטין", english: "VEIN-CUT STONE", multiplier: 1.12, css: "repeating-linear-gradient(97deg,#b7a58b 0 2px,#e0d2ba 2px 7px,#c9b89e 7px 10px)" },
+    { id: "wood", label: "עץ אלון מעושן", english: "SMOKED OAK", multiplier: 1.04, css: "repeating-linear-gradient(94deg,#4a3021 0 3px,#79543a 3px 8px,#382219 8px 11px)" },
+    { id: "brass", label: "פליז מוברש", english: "BRUSHED BRASS", multiplier: 1.28, css: "repeating-linear-gradient(0deg,#8d6b32 0 1px,#d2b16a 1px 3px,#a17f42 3px 5px)" },
+  ],
 };
-const chapters = [
-  { code: "01", title: "PRIVATE ARRIVAL" }, { code: "02", title: "THE PENTHOUSE" },
-  { code: "03", title: "LIGHTING MOODS" }, { code: "04", title: "SPLIT COMPARISON" },
-  { code: "05", title: "VIP CONCIERGE" },
-];
 
 export function HorologyChronoTemplate() {
-  const { data, editsFor } = useSite();
-  const info = data.businessInfo;
-  const hero = data.hero;
-  const services = Array.isArray(data.services) ? data.services : [];
-  const projects = Array.isArray(data.projects) ? data.projects : [];
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mood, setMood] = useState<LightingMood>("gold");
-  const [selectedService, setSelectedService] = useState(0);
-  const [sliderPos, setSliderPos] = useState(52);
-  const [guestName, setGuestName] = useState("");
-  const [visitDate, setVisitDate] = useState("");
-  const [visitTime, setVisitTime] = useState("18:00");
-  const [guestNotes, setGuestNotes] = useState("");
-  const engine = useVirtualCameraEngine(menuOpen);
-  const { smoothProgress, smoothScene, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
-  const scenes = [
-    useVirtualCameraScene(smoothScene, 0), useVirtualCameraScene(smoothScene, 1),
-    useVirtualCameraScene(smoothScene, 2), useVirtualCameraScene(smoothScene, 3),
-    useVirtualCameraScene(smoothScene, 4),
-  ];
-  const activeMood = moodSpecs[mood];
-  const architecturalLight = useTransform([engine.lightX, engine.lightY], (values: number[]) => `radial-gradient(ellipse 72% 52% at ${values[0]}% ${values[1]}%, ${activeMood.tint}, transparent 74%)`);
-  const number = String(info.whatsapp || info.phone || "").replace(/\D/g, "").replace(/^0/, "972");
-  const heroImage = hero.backgroundImage || projects[0]?.afterImage || projects[0]?.beforeImage || "";
-  const beforeImage = projects[0]?.beforeImage || heroImage;
-  const afterImage = projects[0]?.afterImage || heroImage;
-  const conciergeMessage = encodeURIComponent(`שלום, אשמח לתאם אירוח פרטי.\nשם: ${guestName || "אורח/ת"}\nחלל: ${services[selectedService]?.title || "אירוח VIP"}\nתאריך: ${visitDate || "לתיאום"}\nשעה: ${visitTime}\nבקשות: ${guestNotes || "ללא"}`);
-  const conciergeLink = number ? `https://wa.me/${number}?text=${conciergeMessage}` : "#contact";
-  const bentoServices = services.length ? services.slice(0, 4) : [
-    { title: "אירוח פרטי", description: "חלל שקט למפגש אישי", price: "BY REQUEST", iconName: "" },
-    { title: "תאורה מותאמת", description: "תכנון אור לפי האווירה", price: "SIGNATURE", iconName: "" },
-    { title: "חומרים נדירים", description: "זכוכית, מתכת ואבן", price: "BESPOKE", iconName: "" },
-    { title: "קונסיירז׳", description: "תיאום אישי עד הפרט האחרון", price: "PRIVATE", iconName: "" },
-  ];
-
-  return (
-    <div dir="rtl" className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#040405] font-heebo text-[#F1EEE8]">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 transition-colors duration-700" style={{ background: `linear-gradient(120deg,${activeMood.tint},transparent 42%,rgba(0,0,0,.35))` }} />
-      <motion.div aria-hidden="true" className="pointer-events-none fixed inset-0 z-10" style={{ background: architecturalLight }} />
-      <CameraInterface brand="OBSIDIAN VIP PENTHOUSE" chapters={chapters} activeScene={activeScene} jumpToScene={jumpToScene} menuOpen={menuOpen} setMenuOpen={setMenuOpen} smoothProgress={smoothProgress} zDepthReadout={engine.zDepthReadout} lightX={engine.lightX} lightY={engine.lightY} cursorX={engine.cursorX} cursorY={engine.cursorY} accent="#C8A97E" menuLabel="OBSIDIAN / PRIVATE FLOOR" contactLine={`${info.address || info.city} · ${info.phone}`} />
-      <motion.main style={{ rotateX: rigRotateX, rotateY: rigRotateY, transformStyle: "preserve-3d", perspective: "1500px" }} className="relative h-full w-full">
-        <CameraScene index={0} activeScene={activeScene} scene={scenes[0]}>
-          <div className="grid w-full max-w-6xl items-center gap-6 md:grid-cols-[1.04fr_.96fr] md:gap-10">
-            <div className="relative z-10"><p className={chapterLabel} style={{ color: activeMood.accent }} dir="ltr">OBSIDIAN VIP PENTHOUSE &amp; 3D GALLERY</p><h1 {...editsFor("hero.headline")} className="mt-4 max-w-2xl font-frank text-4xl font-light leading-[1.1] tracking-[-.025em] text-[#F0EDE6] sm:text-5xl md:text-6xl lg:text-7xl">{hero.headline || "פרטיות. שקט. נוכחות."}</h1><p {...editsFor("hero.subheadline")} className={`${mutedCopy} mt-5 max-w-xl`}>{hero.subheadline || info.description || "חלל אירוח פרטי, בנוי מחומרים מדויקים, אור מבוקר ופרטים שנבחרו בקפידה."}</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={() => jumpToScene(4)} className="min-h-12 border border-[#C8A97E]/70 bg-[#C8A97E]/10 px-5 text-[10px] tracking-[.12em] text-[#E5D1B2] transition hover:bg-[#C8A97E]/20">{hero.ctaText || "תיאום אירוח פרטי"}</button><button type="button" onClick={() => jumpToScene(1)} className="min-h-12 border border-white/15 px-5 text-[10px] tracking-[.12em] text-white/70 transition hover:border-white/35">לגלות את החלל</button></div><div className="mt-7 grid max-w-lg grid-cols-3 border-t border-white/10 pt-4">{[["01", "אירוח אישי"], ["02", "אור בהתאמה"], ["03", "פרטיות מלאה"]].map(([code, label], index) => <div key={code} className={`px-3 ${index < 2 ? "border-l border-white/10" : ""}`}><span className="block font-frank text-xl text-[#C8A97E]" dir="ltr">{code}</span><span className="mt-1 block text-[9px] leading-5 text-white/50">{label}</span></div>)}</div></div>
-            <div className="relative mx-auto h-[290px] w-full max-w-[500px] md:h-[430px]" style={{ perspective: "1200px", transformStyle: "preserve-3d" }}>
-              <motion.div animate={{ y: [0, -7, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute inset-[8%_4%_7%_16%] border border-[#C8A97E]/25 bg-[#C8A97E]/[.025]" style={{ transform: "translateZ(-90px) rotateY(-15deg) rotateX(2deg)" }} />
-              <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} className="absolute inset-[3%_15%_14%_4%] border border-white/20 bg-white/[.025] backdrop-blur-sm" style={{ transform: "translateZ(15px) rotateY(12deg) rotateX(-3deg)" }} />
-              <div className="absolute inset-[18%_24%_4%_17%] overflow-hidden border border-[#C8A97E]/45 bg-gradient-to-br from-[#C8A97E]/[.1] via-[#15110D]/55 to-black" style={{ transform: "translateZ(90px) rotateY(-7deg)" }}>
-                {heroImage && <div className="absolute inset-5 opacity-45 mix-blend-luminosity" style={{ backgroundImage: `linear-gradient(180deg,rgba(4,4,5,.1),rgba(4,4,5,.85)),url(${heroImage})`, backgroundPosition: "center", backgroundSize: "cover" }} />}<div className="absolute inset-x-5 top-5 h-px bg-gradient-to-l from-transparent via-[#C8A97E]/75 to-transparent" /><div className="absolute inset-x-0 bottom-0 bg-[#050506]/85 p-4 backdrop-blur-lg"><span className="block text-[8px] tracking-[.22em] text-[#C8A97E]" dir="ltr">THE PRIVATE FLOOR</span><span className="mt-2 block font-frank text-xl font-light leading-snug">{info.name || "Obsidian Penthouse"}</span><span className="mt-1 block text-[9px] leading-5 text-white/50">{info.city || "Private address"} / by appointment</span></div>
-              </div><div className="absolute bottom-[8%] left-0 h-px w-[75%] bg-gradient-to-r from-transparent via-[#C8A97E]/60 to-transparent" /><div className="absolute right-0 top-[12%] h-[68%] w-px bg-gradient-to-b from-transparent via-white/30 to-transparent" />
-            </div>
-          </div>
-        </CameraScene>
-
-        <CameraScene index={1} activeScene={activeScene} scene={scenes[1]}>
-          <div className="w-full max-w-6xl"><div className="mb-5 flex items-end justify-between gap-4 border-b border-white/10 pb-4"><div><p className={chapterLabel} style={{ color: activeMood.accent }} dir="ltr">02 / ARCHITECTURAL GALLERY</p><h2 className="mt-2 font-frank text-3xl font-light leading-tight sm:text-5xl">חלל שנבנה לחוויה פרטית</h2></div><span className="hidden text-[8px] tracking-[.2em] text-white/40 md:block" dir="ltr">TILT / INSPECT / SELECT</span></div><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{bentoServices.map((service, index) => <TiltCard3D key={service.title + index} maxTilt={12} glare={.2}><button type="button" onClick={() => { setSelectedService(index); jumpToScene(4); }} className="group flex min-h-[160px] w-full flex-col justify-between border bg-[linear-gradient(145deg,rgba(255,255,255,.055),rgba(200,169,126,.025)_52%,rgba(0,0,0,.15))] p-4 text-right shadow-[inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-xl md:min-h-[220px] md:p-5" style={{ borderColor: selectedService === index ? activeMood.accent : "rgba(255,255,255,.12)" }}><span className="flex items-center justify-between gap-2 text-[8px] tracking-[.14em] text-white/45" dir="ltr"><span>PRIVATE UNIT / 0{index + 1}</span><span style={{ color: activeMood.accent }}>{service.price || "BESPOKE"}</span></span><span><h3 {...editsFor(`services.${index}.title`)} className="font-frank text-xl font-light leading-snug text-[#F0EDE6] md:text-2xl">{service.title}</h3><p {...editsFor(`services.${index}.description`)} className="mt-2 line-clamp-3 text-[10px] leading-5 text-white/55 sm:text-xs sm:leading-6">{service.description}</p></span><span className="mt-4 border-t border-white/10 pt-3 text-[8px] tracking-[.16em] text-[#C8A97E]/80" dir="ltr">EXPLORE THIS SPACE</span></button></TiltCard3D>)}</div></div>
-        </CameraScene>
-
-        <CameraScene index={2} activeScene={activeScene} scene={scenes[2]}>
-          <div className="grid max-h-[calc(100dvh-210px)] w-full max-w-6xl items-center gap-6 overflow-y-auto md:grid-cols-[.85fr_1.15fr]" data-native-scroll="true"><div><p className={chapterLabel} style={{ color: activeMood.accent }} dir="ltr">03 / LIVE LIGHTING STUDIO</p><h2 className="mt-3 font-frank text-4xl font-light leading-[1.12] sm:text-5xl md:text-6xl">האור משנה את כל החלל</h2><p className={`${mutedCopy} mt-4 max-w-md`}>{activeMood.description}</p><div className="mt-5 space-y-2">{(Object.keys(moodSpecs) as LightingMood[]).map((key) => <button type="button" key={key} onClick={() => setMood(key)} aria-pressed={mood === key} className="flex min-h-[64px] w-full items-center justify-between gap-4 border px-4 py-3 text-right transition" style={{ borderColor: mood === key ? moodSpecs[key].accent : "rgba(255,255,255,.12)", background: mood === key ? moodSpecs[key].tint : "rgba(255,255,255,.02)" }}><span><span className="block text-[9px] tracking-[.15em]" dir="ltr">{moodSpecs[key].label}</span><span className="mt-1 block text-[10px] text-white/50">{moodSpecs[key].name}</span></span><span className="h-8 w-12 shrink-0 border border-white/10" style={{ background: `linear-gradient(135deg,${moodSpecs[key].accent},${moodSpecs[key].tint} 55%,#050506)` }} /></button>)}</div></div><div className="relative h-[310px] border border-white/15 bg-[#09090A] p-3 sm:h-[400px] md:h-[445px]" style={{ perspective: "1100px" }}><div className="absolute inset-3 border border-white/10" style={{ transform: "translateZ(-80px) rotateY(-8deg)" }} /><motion.div animate={{ borderColor: activeMood.accent, boxShadow: `inset 0 0 70px ${activeMood.tint}` }} transition={{ duration: .6 }} className="absolute inset-[9%_8%_10%_14%] overflow-hidden border bg-gradient-to-br from-white/[.05] via-transparent to-black/80" style={{ transform: "translateZ(25px) rotateY(8deg)" }}>{heroImage && <div className="absolute inset-0 opacity-45 mix-blend-luminosity" style={{ backgroundImage: `linear-gradient(0deg,#040405,transparent 75%),url(${heroImage})`, backgroundPosition: "center", backgroundSize: "cover" }} />}<div className="absolute inset-x-5 top-5 h-px" style={{ background: `linear-gradient(90deg,transparent,${activeMood.accent},transparent)` }} /><div className="absolute inset-x-0 bottom-0 bg-[#040405]/60 p-5 backdrop-blur-sm"><span className="block text-[8px] tracking-[.22em]" style={{ color: activeMood.accent }} dir="ltr">LIVE MOOD / {activeMood.label}</span><span className="mt-2 block font-frank text-2xl font-light leading-tight sm:text-4xl">Private light, precisely set.</span><span className="mt-2 block max-w-sm text-[10px] leading-5 text-white/55 sm:text-xs sm:leading-6">משטחי הזכוכית והמתכת מקבלים אופי אחר בכל מעבר בין מצבי התאורה.</span></div></motion.div></div></div>
-        </CameraScene>
-
-        <CameraScene index={3} activeScene={activeScene} scene={scenes[3]}>
-          <div className="w-full max-w-6xl"><div className="mb-5 flex items-end justify-between gap-4"><div><p className={chapterLabel} style={{ color: activeMood.accent }} dir="ltr">04 / SPLIT COMPARISON STUDIO</p><h2 className="mt-2 font-frank text-3xl font-light leading-tight sm:text-5xl">אותו חלל. שתי אווירות</h2></div><span className="hidden text-[8px] tracking-[.2em] text-white/45 sm:block" dir="ltr">DRAG / ARROW KEYS</span></div><div className="relative h-[300px] overflow-hidden border border-white/15 bg-[#0A0A0B] sm:h-[390px] md:h-[420px]" data-camera-interactive="true" style={{ touchAction: "pan-x" }}><div className="absolute inset-0 bg-[linear-gradient(120deg,#11151A,#282A2D_40%,#09090A_78%)]" />{afterImage && <div className="absolute inset-0 opacity-55 mix-blend-luminosity" style={{ backgroundImage: `linear-gradient(90deg,rgba(4,4,5,.25),rgba(4,4,5,.7)),url(${afterImage})`, backgroundPosition: "center", backgroundSize: "cover" }} />}<div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)`, backgroundImage: `linear-gradient(130deg,rgba(200,169,126,.25),rgba(4,4,5,.18) 45%),url(${beforeImage})`, backgroundPosition: "center", backgroundSize: "cover" }}><div className="absolute inset-5 border border-[#C8A97E]/35 sm:inset-8" /><div className="absolute inset-[14%_13%_13%_16%] border border-[#C8A97E]/45 bg-gradient-to-br from-[#C8A97E]/[.12] to-transparent" /><div className="absolute bottom-4 right-4 max-w-xs bg-[#040405]/80 p-3 backdrop-blur-md sm:bottom-6 sm:right-6 sm:p-5"><span className="text-[8px] tracking-[.22em] text-[#C8A97E]" dir="ltr">AMBIENT GOLD</span><span className="mt-1 block font-frank text-xl sm:text-3xl">אור חם</span></div></div><div className="absolute bottom-4 left-4 max-w-xs border border-white/10 bg-black/70 p-3 backdrop-blur-md sm:bottom-6 sm:left-6 sm:p-5"><span className="text-[8px] tracking-[.22em] text-white/60" dir="ltr">MIDNIGHT TITANIUM</span><span className="mt-1 block font-frank text-xl sm:text-3xl">אור קר</span></div><input type="range" min={0} max={100} value={sliderPos} onChange={(event) => setSliderPos(Number(event.target.value))} aria-label="מיקום קו ההשוואה" className="absolute inset-0 z-20 h-full w-full cursor-ew-resize opacity-0" /><div className="pointer-events-none absolute inset-y-0 z-10 w-px bg-[#C8A97E] shadow-[0_0_18px_rgba(200,169,126,.55)]" style={{ left: `${sliderPos}%` }}><span className="absolute left-1/2 top-1/2 h-12 w-8 -translate-x-1/2 -translate-y-1/2 border border-[#C8A97E] bg-[#040405]/85" /></div></div><div className="mt-4 flex items-center justify-between text-[9px] leading-5 text-white/45"><span>הזזה אופקית להשוואת תאורה וחומרים</span><span dir="ltr">{String(sliderPos).padStart(2, "0")} / 100</span></div></div>
-        </CameraScene>
-
-        <CameraScene index={4} activeScene={activeScene} scene={scenes[4]} id="contact">
-          <div className="grid max-h-[calc(100dvh-200px)] w-full max-w-6xl gap-5 overflow-y-auto lg:grid-cols-[.88fr_1.12fr]" data-native-scroll="true"><div className="flex flex-col justify-between border border-white/10 bg-gradient-to-br from-[#C8A97E]/[.07] via-[#09090A] to-black p-5 sm:p-7"><div><p className={chapterLabel} style={{ color: activeMood.accent }} dir="ltr">05 / PRIVATE CONCIERGE</p><h2 className="mt-4 font-frank text-4xl font-light leading-[1.12] sm:text-5xl">האירוח הבא שלכם מתחיל כאן</h2><p className={`${mutedCopy} mt-4`}>{info.description || "תיאום אישי לפרטים, לזמנים ולחוויה שמותאמת בדיוק לאורחים שלכם."}</p></div><div className="mt-6 border-t border-white/10 pt-4 text-[10px] leading-6 text-white/50"><p>{info.address || info.city}</p><p dir="ltr">{info.phone}</p><p className="mt-2 tracking-[.18em] text-[#C8A97E]/75" dir="ltr">DISCREET / PRIVATE / BY APPOINTMENT</p></div></div><div className="border border-white/[.12] bg-[#09090A]/90 p-5 backdrop-blur-xl sm:p-7"><div className="mb-5 border-b border-white/10 pb-4"><span className="text-[8px] tracking-[.22em] text-[#C8A97E]" dir="ltr">REQUEST A PRIVATE SESSION</span><h3 className="mt-2 font-frank text-2xl font-light sm:text-3xl">בקשת אירוח אישי</h3></div><div className="grid gap-4 sm:grid-cols-2"><label className="block text-[10px] text-white/55">שם מלא<input value={guestName} onChange={(event) => setGuestName(event.target.value)} autoComplete="name" placeholder="איך לפנות אליכם?" className="mt-2 min-h-12 w-full border border-white/[.12] bg-black/35 px-3 py-3 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#C8A97E]/70" /></label><label className="block text-[10px] text-white/55">חלל מבוקש<select value={selectedService} onChange={(event) => setSelectedService(Number(event.target.value))} className="mt-2 min-h-12 w-full border border-white/[.12] bg-[#09090A] px-3 py-3 text-xs text-white outline-none focus:border-[#C8A97E]/70">{bentoServices.map((service, index) => <option key={service.title + index} value={index}>{service.title}</option>)}</select></label><label className="block text-[10px] text-white/55">תאריך מועדף<input type="date" value={visitDate} onChange={(event) => setVisitDate(event.target.value)} className="mt-2 min-h-12 w-full border border-white/[.12] bg-[#09090A] px-3 py-3 text-xs text-white outline-none focus:border-[#C8A97E]/70" /></label><label className="block text-[10px] text-white/55">שעה מועדפת<select value={visitTime} onChange={(event) => setVisitTime(event.target.value)} className="mt-2 min-h-12 w-full border border-white/[.12] bg-[#09090A] px-3 py-3 text-xs text-white outline-none focus:border-[#C8A97E]/70">{["16:00", "17:00", "18:00", "19:00", "20:00", "21:00"].map((time) => <option key={time}>{time}</option>)}</select></label></div><label className="mt-4 block text-[10px] text-white/55">הערות לבקשה<textarea value={guestNotes} onChange={(event) => setGuestNotes(event.target.value)} rows={2} placeholder="פרטים נוספים או העדפות מיוחדות" className="mt-2 w-full resize-y border border-white/[.12] bg-black/35 px-3 py-3 text-xs leading-5 text-white outline-none placeholder:text-white/30 focus:border-[#C8A97E]/70" /></label><div className="mt-5 flex flex-wrap gap-3"><a href={conciergeLink} target={number ? "_blank" : undefined} rel="noreferrer" className="flex min-h-12 items-center justify-center border border-[#C8A97E]/70 bg-[#C8A97E]/10 px-6 py-3 text-[10px] tracking-[.12em] text-[#E5D1B2] transition hover:bg-[#C8A97E]/20">שליחת בקשת אירוח</a><button type="button" onClick={() => jumpToScene(0)} className="min-h-12 border border-white/15 px-5 py-3 text-[10px] text-white/60 transition hover:text-white">חזרה לכניסה</button></div></div></div>
-        </CameraScene>
-      </motion.main>
-    </div>
-  );
+  return <ArchitecturalExperience config={config} />;
 }

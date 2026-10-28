@@ -19,6 +19,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: hidden;
   background: #050505;
   color: #f4f1eb;
   font-family: var(--font-assistant);
@@ -47,8 +48,18 @@ select,
   outline-offset: 4px;
 }
 
+button,
+a {
+  cursor: pointer;
+}
+
+button:disabled,
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 :focus-visible {
-  outline: 2px solid rgba(200, 169, 126, 0.9);
+  outline: 2px solid rgba(200, 169, 126, 0.95);
 }
 
 .no-scrollbar {
@@ -146,7 +157,7 @@ input[type="range"].kinetic-range {
 }
 input[type="range"].kinetic-range::-webkit-slider-runnable-track {
   height: 2px;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--line, rgba(255, 255, 255, 0.2));
 }
 input[type="range"].kinetic-range::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -161,7 +172,7 @@ input[type="range"].kinetic-range::-webkit-slider-thumb {
 }
 input[type="range"].kinetic-range::-moz-range-track {
   height: 2px;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--line, rgba(255, 255, 255, 0.2));
 }
 input[type="range"].kinetic-range::-moz-range-thumb {
   height: 32px;
@@ -201,4 +212,10 @@ body.virtual-camera-active::-webkit-scrollbar {
 [data-camera-interactive] input[type="range"],
 [data-camera-interactive][role="slider"] {
   touch-action: pan-x;
+}
+
+/* Keep vertical document scrolling available over horizontal gestures. */
+#transformation [data-camera-interactive] [role="slider"],
+input[type="range"].kinetic-range {
+  touch-action: pan-y !important;
 }
