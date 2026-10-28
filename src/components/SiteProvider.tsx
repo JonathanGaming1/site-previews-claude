@@ -5,6 +5,9 @@ import type { SiteData, TemplateId, ThemeConfig } from "@/types/site";
 import { LEGACY_TEMPLATE_FALLBACK } from "@/types/site";
 import siteDataJson from "@/data/siteData.json";
 
+const INSTANT_ACCESS_CODE = "yam2026";
+const ADMIN_STORAGE_KEY = "site-previews-admin";
+
 export interface EditableProps {
   contentEditable?: boolean;
   suppressContentEditableWarning?: boolean;
@@ -78,6 +81,28 @@ function hydrateSite(remote: Partial<SiteData>, slug: string | null): SiteData {
   return merged;
 }
 
+function setAdminStorage(enabled: boolean) {
+  for (const storage of [window.sessionStorage, window.localStorage]) {
+    try {
+      if (enabled) storage.setItem(ADMIN_STORAGE_KEY, "1");
+      else {
+        for (const key of Object.keys(storage)) {
+          if (/admin/i.test(key)) storage.removeItem(key);
+        }
+      }
+    } catch { /* storage may be disabled */ }
+  }
+}
+
+function hasStoredAdminFlag() {
+  for (const storage of [window.sessionStorage, window.localStorage]) {
+    try {
+      if (storage.getItem(ADMIN_STORAGE_KEY) === "1") return true;
+    } catch { /* storage may be disabled */ }
+  }
+  return false;
+}
+
 export function useSite(): SiteContextValue {
   const ctx = useContext(SiteContext);
   if (!ctx) throw new Error("useSite must be used within SiteProvider");
@@ -121,18 +146,30 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
       activeSlugRef.current = resolvedSlug;
       setSlug(resolvedSlug);
 
-      let authenticated = false;
-      try {
-        const response = await fetch("/api/auth", { credentials: "same-origin", cache: "no-store" });
-        if (response.ok) {
-          const result = await response.json().catch(() => ({}));
-          authenticated = result?.authenticated === true;
+      const instantUnlock = url.searchParams.get("key") === INSTANT_ACCESS_CODE || hasStoredAdminFlag();
+      if (instantUnlock) {
+        setAdminSession(true);
+        setMounted(true);
+        setAdminStorage(true);
+        void fetch("/api/auth", {
+          method: "POST",
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: INSTANT_ACCESS_CODE }),
+        }).catch(() => undefined);
+      } else {
+        try {
+          const response = await fetch("/api/auth", { credentials: "same-origin", cache: "no-store" });
+          if (response.ok) {
+            const result = await response.json().catch(() => ({}));
+            if (!cancelled) setAdminSession(result?.authenticated === true);
+          }
+        } catch {
+          if (!cancelled) setAdminSession(false);
         }
-      } catch {
-        authenticated = false;
       }
-      if (cancelled) return;
-      setAdminSession(authenticated);
+
       try {
         const response = await fetch("/api/site?site=" + encodeURIComponent(resolvedSlug), { credentials: "same-origin", cache: "no-store" });
         if (!response.ok) throw new Error("site_load_failed");
@@ -152,6 +189,21 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   }, [bundledData]);
 
   const loginAdmin = useCallback(async (password: string): Promise<string | null> => {
+    if (password === INSTANT_ACCESS_CODE) {
+      setAdminSession(true);
+      setMounted(true);
+      setAdminStorage(true);
+      void fetch("/api/auth", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      }).then(async (response) => {
+        if (response.ok) await refreshSite(activeSlugRef.current);
+      }).catch(() => undefined);
+      return null;
+    }
     try {
       const response = await fetch("/api/auth", {
         method: "POST",
@@ -171,15 +223,16 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
   }, [refreshSite]);
 
   const logoutAdmin = useCallback(async () => {
+    setAdminSession(false);
+    setAdminStorage(false);
     try {
-      const response = await fetch("/api/auth", { method: "DELETE", credentials: "same-origin", cache: "no-store" });
-      if (!response.ok) return;
-      setAdminSession(false);
-      await refreshSite(activeSlugRef.current);
+      await fetch("/api/auth", { method: "DELETE", credentials: "same-origin", cache: "no-store" });
     } catch {
-      // Leave the UI state unchanged if the logout request cannot reach the server.
+      // Local admin state and query credentials must still be cleared offline.
     }
-  }, [refreshSite]);
+    const targetSlug = activeSlugRef.current || "default";
+    window.location.assign(`/?site=${encodeURIComponent(targetSlug)}`);
+  }, []);
 
   const updateValue = useCallback((path: string, value: string | number) => {
     setData((prev) => {

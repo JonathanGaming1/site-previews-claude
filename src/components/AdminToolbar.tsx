@@ -94,7 +94,7 @@ export function AdminToolbar() {
         <button type="button" disabled={busy} onClick={() => setAiOpen(true)} className="border border-white/15 px-3 py-2 hover:bg-white/10 disabled:opacity-50">בקש שינוי מ-AI</button>
         <button type="button" disabled={busy} onClick={() => void runAdmin("manual_save", { updatedData: data })} className="flex items-center gap-1 border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-emerald-200 hover:bg-emerald-400/20 disabled:opacity-50"><Check size={14}/> שמור שינויים</button>
         <button type="button" disabled={busy} onClick={() => setRecallOpen(true)} className="flex items-center gap-1 border border-white/15 px-3 py-2 hover:bg-white/10 disabled:opacity-50"><Clock3 size={14}/> חזור לגרסה קודמת (Recall)</button>
-        <button type="button" disabled={busy} onClick={() => void logoutAdmin()} className="flex items-center gap-1 border border-white/15 px-3 py-2 text-white/70 hover:bg-white/10 disabled:opacity-50"><LogOut size={14}/> יציאה</button>
+        <button type="button" onClick={() => void logoutAdmin()} className="flex items-center gap-1 border border-red-400/40 bg-red-500/15 px-3 py-2 font-medium text-red-100 transition hover:bg-red-500/25 focus-visible:outline-red-300"><LogOut size={14}/> יציאה ממצב אדמין</button>
         <span className="mr-auto text-white/40" dir="ltr">/p/{targetSlug}</span>
         {busy && <span className="text-white/50">מעבד...</span>}
         {status && <span role="status" className="text-emerald-200">{status}</span>}

@@ -6,6 +6,7 @@ import { AdminToolbar } from "@/components/AdminToolbar";
 import { SecurityGuard } from "@/components/SecurityGuard";
 import { ViewTracker } from "@/components/ViewTracker";
 import { AdminLogin } from "@/components/AdminLogin";
+import { EntranceCurtain } from "@/components/EntranceCurtain";
 import { ForgeAutomotiveTemplate } from "@/templates/ForgeAutomotiveTemplate";
 import { AppleSpatialTemplate } from "@/templates/AppleSpatialTemplate";
 import { HorologyChronoTemplate } from "@/templates/HorologyChronoTemplate";
@@ -25,10 +26,12 @@ function TemplateRenderer() {
 }
 
 function ExperienceShell() {
+  const { data, mounted } = useSite();
   return (
     <>
       <ViewTracker />
       <TemplateRenderer />
+      <EntranceCurtain name={data.businessInfo.name} ready={mounted} />
       <AdminToolbar />
       <AdminLogin />
       <SecurityGuard />
