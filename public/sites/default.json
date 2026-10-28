@@ -5,7 +5,8 @@
   "checkoutUrl": "/checkout",
   "theme": {
     "primaryColor": "#d4af37",
-    "accentColor": "#f59e0b"
+    "accentColor": "#f59e0b",
+    "backgroundColor": "#f9f9f9"
   },
   "businessInfo": {
     "name": "קבלן שיפוצים",
