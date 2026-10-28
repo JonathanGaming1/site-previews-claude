@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, useTransform } from "framer-motion";
 import { useSite } from "@/components/SiteProvider";
 import { TiltCard3D } from "@/components/TiltCard3D";
-import { CameraInterface, CameraScene, chapterLabel, mutedCopy } from "@/templates/CameraInterface";
+import { CameraInterface, CameraScene, chapterLabel, glassPanel, mutedCopy } from "@/templates/CameraInterface";
 import { useVirtualCameraEngine, useVirtualCameraScene } from "@/templates/useVirtualCameraEngine";
 
 type LightingMood = "gold" | "titanium" | "crimson";
@@ -34,11 +34,11 @@ export function HorologyChronoTemplate() {
   const [visitTime, setVisitTime] = useState("18:00");
   const [guestNotes, setGuestNotes] = useState("");
   const engine = useVirtualCameraEngine(menuOpen);
-  const { smoothProgress, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
+  const { smoothProgress, smoothScene, activeScene, jumpToScene, rigRotateX, rigRotateY } = engine;
   const scenes = [
-    useVirtualCameraScene(smoothProgress, 0), useVirtualCameraScene(smoothProgress, 1),
-    useVirtualCameraScene(smoothProgress, 2), useVirtualCameraScene(smoothProgress, 3),
-    useVirtualCameraScene(smoothProgress, 4),
+    useVirtualCameraScene(smoothScene, 0), useVirtualCameraScene(smoothScene, 1),
+    useVirtualCameraScene(smoothScene, 2), useVirtualCameraScene(smoothScene, 3),
+    useVirtualCameraScene(smoothScene, 4),
   ];
   const activeMood = moodSpecs[mood];
   const architecturalLight = useTransform([engine.lightX, engine.lightY], (values: number[]) => `radial-gradient(ellipse 72% 52% at ${values[0]}% ${values[1]}%, ${activeMood.tint}, transparent 74%)`);
