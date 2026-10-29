@@ -1,9 +1,6 @@
 {
   "businessId": "demo-mvt0q93z-wytq2",
-  "slug": "demo-mvt0q93z-wytq2",
-  "repo": "site-previews-kimi",
-  "engine": "kimi",
-  "templateId": "horology-chrono",
+  "templateId": "swiss-editorial",
   "isDemo": true,
   "checkoutUrl": "/checkout?site=demo-mvt0q93z-wytq2",
   "theme": {
@@ -13,7 +10,6 @@
   "businessInfo": {
     "name": "אליאור מחלוף אינסטלציה",
     "category": "שרברב",
-    "city": "הרצליה ורמת השרון",
     "tagline": "אינסטלציה ללא פשרות",
     "description": "אליאור מחלוף אינסטלציה מספק שירותי שרברבות ברמת מקצוע גבוהה בהרצליה ורמת השרון. עם ניסיון של למעלה מעשור, אנו מבטיחים פתרונות מהירים, אמינים ובאיכות בלתי מתפשרת.",
     "phone": "+972 52-884-0036",
@@ -21,7 +17,8 @@
     "address": "הרצליה ורמת השרון",
     "openingHours": "א-ה 08:00-19:00, ו 08:00-13:00",
     "googleRating": 4.9,
-    "reviewsCount": 24
+    "reviewsCount": 24,
+    "city": "הרצליה ורמת השרון"
   },
   "hero": {
     "headline": "המקצוענים של האינסטלציה",
@@ -99,5 +96,8 @@
       "question": "האם אתם מבצעים עבודות גם במקומות קודמים?",
       "answer": "הצוות שלנו מוסמך לעבוד במגוון סוגי מבנים, כולל בתים פרטיים, מגדלים ועסקים."
     }
-  ]
+  ],
+  "slug": "demo-mvt0q93z-wytq2",
+  "repo": "site-previews-kimi",
+  "engine": "kimi"
 }
